@@ -5,6 +5,7 @@ const todoSchema = new Schema({
   UserId    : { type: Schema.Types.ObjectId, ref: 'user'},
   content   : String,
   checklist : Boolean,
+  forDate   : Date,
 }, {
   timestamps : true
 });

@@ -13,9 +13,11 @@ module.exports = {
     })
   },
   createTodo : ( req, res) => {
+    console.log(req.body, req.decoded)
     Todo.create({
       UserId : req.decoded.id,
       content : req.body.content,
+      forDate : req.body.forDate,
       checklist : false
     })
     .then(todo => {
@@ -33,6 +35,7 @@ module.exports = {
   updateTodo : ( req, res ) => {
     Todo.findByIdAndUpdate(req.params.id,{
       content : req.body.content,
+      forDate: req.body.forDate,
       checklist : false
     },{ new : true })
     .then(todo => {
@@ -48,8 +51,8 @@ module.exports = {
     })
   },
   updateCheckList : ( req, res ) => {
-    let checklist = req.body.checklist == 'true' ? true : false;
-    console.log(checklist)
+    let checklist = req.body.checklist == 'true' || req.body.checklist == true ? true : false;
+    console.log(checklist);
     Todo.findByIdAndUpdate(req.params.id,{
       checklist : checklist
     },{ new : true })
