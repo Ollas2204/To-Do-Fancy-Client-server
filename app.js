@@ -8,6 +8,7 @@ var mongoose = require('mongoose');
 require('dotenv').config();
 const cors = require('cors');
 
+var indexRouter = require('./routes/index')
 var todoRouter = require('./routes/todos');
 var usersRouter = require('./routes/users');
 
@@ -27,6 +28,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use('/', indexRouter)
 app.use('/todos', todoRouter);
 app.use('/users', usersRouter);
 
