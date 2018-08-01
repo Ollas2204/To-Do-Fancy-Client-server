@@ -1,7 +1,8 @@
 const Todo = require('../models/todo');
 
 module.exports = {
-  findByUser : ( req, res, next) => {
+
+  findByUser : (req, res, next) => {
     Todo.find({
       UserId : req.decoded.id,
     })
@@ -12,6 +13,7 @@ module.exports = {
       res.status(500).json(err)
     })
   },
+
   createTodo : ( req, res) => {
     console.log(req.body, req.decoded)
     Todo.create({
@@ -33,6 +35,7 @@ module.exports = {
       })
     })
   },
+
   updateTodo : ( req, res ) => {
     Todo.findByIdAndUpdate(req.params.id,{
       content : req.body.content,
@@ -40,6 +43,7 @@ module.exports = {
       checklist : false
     },{ new : true })
     .then(todo => {
+      console.log(todo);
       res.status(201).json({
         msg : 'successful update the data',
         todo : todo
@@ -51,9 +55,9 @@ module.exports = {
       })
     })
   },
+
   updateCheckList : ( req, res ) => {
-    let checklist = req.body.checklist == 'true' || req.body.checklist == true ? true : false;
-    console.log(checklist);
+    let checklist = true
     Todo.findByIdAndUpdate(req.params.id,{
       checklist : checklist
     },{ new : true })
@@ -69,6 +73,7 @@ module.exports = {
       })
     })
   },
+
   deleteTodo : ( req, res) => {
     Todo.findByIdAndRemove(req.params.id, (err, deleteTodo) => {
       if (err) {

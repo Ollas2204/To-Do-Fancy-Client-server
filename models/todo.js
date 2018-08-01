@@ -3,10 +3,10 @@ const Schema = mongoose.Schema;
 
 const todoSchema = new Schema({
   UserId    : { type: Schema.Types.ObjectId, ref: 'user'},
-  content   : String,
-  checklist : Boolean,
-  forDate   : Date,
-  weather   : String
+  content   : { type: String },
+  checklist : { type: Boolean },
+  forDate   : { type: Date },
+  weather   : { type: String }
 }, {
   timestamps : true
 });
