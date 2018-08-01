@@ -18,6 +18,7 @@ module.exports = {
       UserId : req.decoded.id,
       content : req.body.content,
       forDate : req.body.forDate,
+      weather: req.body.weather,
       checklist : false
     })
     .then(todo => {

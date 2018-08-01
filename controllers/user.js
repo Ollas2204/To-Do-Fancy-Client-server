@@ -1,97 +1,90 @@
-const FB      = require('fb');
-const User    = require('../models/user');
-const jwt     = require('jsonwebtoken');
-const bcrypt  = require('bcrypt');
+const FB = require('fb');
+const User = require('../models/user');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
 
 
 module.exports = {
   login_fb: (req, res) => {
-    let token = req.body.token
+    User.findOne({
+        email: req.body.email
+      })
+      .then(userData => {
+        if (userData === null) {
+          User.create({
+              name: req.body.name,
+              email: req.body.email,
+              fbid: req.body.id,
+            })
+            .then(resultInput => {
+              let tokenUser = jwt.sign({
+                id: resultInput._id,
+                name: resultInput.name,
+                email: resultInput.email
+              }, process.env.SECRET_TOKEN)
 
-    FB.setAccessToken(token);
+              res
+                .status(200)
+                .json({
+                  token: tokenUser
+                })
+            })
 
-    FB.api('me', {
-      fields: ['id', 'name', 'email'],
-      access_token: token
-    }, (response) => {
-      User.findOne({
-          email: response.email
-        })
+            .catch(err => {
+              res
+                .status(400)
+                .json(err)
+            })
+        } else {
+          let tokenUser = jwt.sign({
+            id: userData._id,
+            name: userData.name,
+            email: userData.email
+          }, process.env.SECRET_TOKEN)
 
-        .then(userData => {
-          if (userData === null) {
-            User.create({
-                name: response.name,
-                email: response.email,
-                fbid: response.id,
-              })
-
-              .then(resultInput => {
-                let tokenUser = jwt.sign({
-                  id: resultInput._id,
-                  name: resultInput.name,
-                  email: resultInput.email
-                }, process.env.SECRET_TOKEN)
-
-                res
-                  .status(200)
-                  .json(tokenUser)
-              })
-
-              .catch(err => {
-                res
-                  .status(400)
-                  .json(err)
-              })
-          } else {
-            let tokenUser = jwt.sign({
-              id: resultInput._id,
-              name: resultInput.name,
-              email: resultInput.email
-            }, process.env.SECRET_TOKEN)
-
-            res
-              .status(200)
-              .json(tokenUser)
-          }
-        })
-
-        .catch(err => {
           res
-            .status(400)
-            .json(err)
-        })
-    });
+            .status(200)
+            .json({
+              token: tokenUser
+            })
+        }
+      })
+
+      .catch(err => {
+        res
+          .status(400)
+          .json(err)
+      })
   },
   login: async (req, res) => {
     try {
-        let data_user = await User.findOne({
-            email: req.body.email,
+      let data_user = await User.findOne({
+        email: req.body.email,
+      })
+
+      if (!data_user) {
+        return res.status(401).send({
+          message: "Please fill the information correctly"
         })
+      }
 
-        if(!data_user){
-          return res.status(401).send({
-            message: "Please fill the information correctly"
-          })
-        }
-
-        if(!bcrypt.compareSync(req.body.password, data_user.password)){
-          return res.status(401).send({
-            message: "Please fill the information correctly"
-          })
-        }
-
-        let tokenUser = jwt.sign({
-          id: data_user._id,
-          name: data_user.name,
-          email: data_user.email
-        }, process.env.SECRET_TOKEN)
-
-        return res.status(200).send({
-          message: "Correct Information",
-          token: tokenUser
+      if (!bcrypt.compareSync(req.body.password, data_user.password)) {
+        return res.status(401).send({
+          message: "Please fill the information correctly"
         })
+      }
+
+      let tokenUser = jwt.sign({
+        id: data_user._id,
+        name: data_user.name,
+        email: data_user.email
+      }, process.env.SECRET_TOKEN)
+
+      return res.status(200).send({
+        message: "Correct Information",
+        token: tokenUser
+      })
     } catch (e) {
       console.log(e)
       next(e)
@@ -102,49 +95,56 @@ module.exports = {
     req.body.password = bcrypt.hashSync(req.body.password, salt);
     let newUser = new User(req.body);
     newUser
-    .save()
-    .then(newUser => {
-      res.status(201).json({
-        msg : 'add new user',
-        newUser
+      .save()
+      .then(newUser => {
+        res.status(201).json({
+          msg: 'add new user',
+          newUser
+        })
       })
-    })
-    .catch(err => {
-      res.status(500).json({
-        err
+      .catch(err => {
+        res.status(500).json({
+          err
+        })
       })
-    })
   },
   updateUser: (req, res) => {
     let id = req.params.id;
     let updateUser = req.body;
     User.findByIdAndUpdate(
-      id,
-      {$set: updateUser},
-      {new: true},
+      id, {
+        $set: updateUser
+      }, {
+        new: true
+      },
       (err, updateUser) => {
         if (err) {
-          res.status(400).json({err}) ;
+          res.status(400).json({
+            err
+          });
           return console.log(err);;
         }
         res.status(201).json({
-          msg : "update customer successful",
+          msg: "update customer successful",
           updateUser
         })
       }
-    )},
-    deleteUser : (req, res) => {
-      let id = req.params.id;
-      let deleteUser = req.body;
-      User.findByIdAndRemove(id,(err, deletedUser) => {
-        if (err) {
-          res.status(400).json({err});
-          return console.log(err);;
-        }
-        res.status(201).json ({
-          msg : 'delete customer successful',
-          deletedUser
-        })
+    )
+  },
+  deleteUser: (req, res) => {
+    let id = req.params.id;
+    let deleteUser = req.body;
+    User.findByIdAndRemove(id, (err, deletedUser) => {
+      if (err) {
+        res.status(400).json({
+          err
+        });
+        return console.log(err);;
+      }
+      res.status(201).json({
+        msg: 'delete customer successful',
+        deletedUser
       })
-    }
+    })
+  }
 }

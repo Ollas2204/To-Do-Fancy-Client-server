@@ -6,6 +6,7 @@ const todoSchema = new Schema({
   content   : String,
   checklist : Boolean,
   forDate   : Date,
+  weather   : String
 }, {
   timestamps : true
 });
