@@ -57,49 +57,85 @@ module.exports = {
           .json(err)
       })
   },
-  login: async (req, res) => {
-    try {
-      let data_user = await User.findOne({
-        email: req.body.email,
-      })
+  login: (req, res) => {
 
-      if (!data_user) {
-        return res.status(401).send({
-          message: "Please fill the information correctly"
-        })
-      }
-
-      if (!bcrypt.compareSync(req.body.password, data_user.password)) {
-        return res.status(401).send({
-          message: "Please fill the information correctly"
-        })
-      }
-
-      let tokenUser = jwt.sign({
-        id: data_user._id,
-        name: data_user.name,
-        email: data_user.email
-      }, process.env.SECRET_TOKEN)
-
-      return res.status(200).send({
-        message: "Correct Information",
-        token: tokenUser
-      })
-    } catch (e) {
-      console.log(e)
-      next(e)
+    const userData = {
+      email: req.body.email,
+      password: req.body.password
     }
+    //
+    // console.log(userData);
+
+    User.findOne({ email: req.body.email }, (err, response) => {
+        if (!response) {
+          return res.status(401).send({
+            message: "Please fill the information correctly"
+          })
+        }
+
+        if (!bcrypt.compareSync(req.body.password, response.password)) {
+          return res.status(401).send({
+            message: "Please fill the information correctly"
+          })
+        }
+
+        let tokenUser = jwt.sign({
+          id: response._id,
+          name: response.name,
+          email: response.email
+        }, process.env.SECRET_TOKEN)
+
+        console.log(tokenUser);
+
+        res.status(200).send({
+          message: "Correct Information",
+          token: tokenUser
+        })
+    })
+    // try {
+    //   let data_user = await User.findOne({
+    //     email: req.body.email,
+    //   })
+    //
+    //   if (!data_user) {
+    //     return res.status(401).send({
+    //       message: "Please fill the information correctly"
+    //     })
+    //   }
+    //
+    //   if (!bcrypt.compareSync(req.body.password, data_user.password)) {
+    //     return res.status(401).send({
+    //       message: "Please fill the information correctly"
+    //     })
+    //   }
+    //
+    //   let tokenUser = jwt.sign({
+    //     id: data_user._id,
+    //     name: data_user.name,
+    //     email: data_user.email
+    //   }, process.env.SECRET_TOKEN)
+    //
+    //   return res.status(200).send({
+    //     message: "Correct Information",
+    //     token: tokenUser
+    //   })
+    // } catch (e) {
+    //   console.log(e)
+    //   next(e)
+    // }
   },
   addUser: (req, res) => {
     let salt = bcrypt.genSaltSync(8);
     req.body.password = bcrypt.hashSync(req.body.password, salt);
     let newUser = new User(req.body);
+    console.log(newUser);
+
     newUser
       .save()
-      .then(newUser => {
+      .then(response => {
         res.status(201).json({
           msg: 'add new user',
-          newUser
+          response
         })
       })
       .catch(err => {

@@ -13,7 +13,12 @@ var todoRouter = require('./routes/todos');
 var usersRouter = require('./routes/users');
 
 var app = express();
-mongoose.connect('mongodb://localhost/todofancy');
+mongoose.connect('mongodb://Ollas2204:asd123@ds255347.mlab.com:55347/tododb', (err, response) => {
+  if (err) {
+    console.log(err);
+  }
+  console.log('connect database');
+});
 // MLAB
 // mongoose.connect('mongodb://Xxxxxxxxx4:Xxxxxxxxx4@ds145121.mlab.com:45121/todofancy');
 
